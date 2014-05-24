@@ -16,6 +16,7 @@ type ApiResponse struct {
 }
 
 // GenerateSlug converts a string into a lowercase dasherized slug
+//
 // For example: GenerateSlug("My cool object") returns "my-cool-object"
 func GenerateSlug(str string) (slug string) {
 	return strings.Map(func(r rune) rune {
@@ -32,7 +33,8 @@ func GenerateSlug(str string) (slug string) {
 }
 
 // InChain returns a boolean if a string is already in a slice of strings
-// Todo - Extend this to work for all standard types
+//
+// [TODO] Extend this to work for all standard types
 func InChain(needle string, haystack []string) bool {
 	if haystack == nil {
 		return false
@@ -46,6 +48,7 @@ func InChain(needle string, haystack []string) bool {
 }
 
 // Similar to "extend" in JS, only updates fields that are specified and not empty in newData
+//
 // Both newData and mainObj must be pointers to struct objects
 func Update(mainObj interface{}, newData interface{}) bool {
 	newDataVal, mainObjVal := reflect.ValueOf(newData).Elem(), reflect.ValueOf(mainObj).Elem()
@@ -64,6 +67,7 @@ func Update(mainObj interface{}, newData interface{}) bool {
 }
 
 // IsEmpty checks to see if a field has a set value
+//
 // Goes beyond usual reflect.IsZero check to handle numbers, strings, and slices
 // For structs, iterates over all accessible properties and returns true only if all nested fields
 // are also empty.
