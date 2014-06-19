@@ -2,6 +2,7 @@
 package utils
 
 import (
+	"net/http"
 	"reflect"
 	"strings"
 	"unicode"
@@ -95,4 +96,24 @@ func IsEmpty(val reflect.Value) bool {
 	default:
 		return false
 	}
+}
+
+// func CorsHandler provides an *extremely* broad Cors handler for development
+// Not suitable for production use, as origin, method, and headers should all be
+// more extensively restricted for a production environment
+func CorsHandler(handler http.Handler) http.Handler {
+	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
+		rw.Header().Set("Content-Type", "application/json")
+		rw.Header().Add("Access-Control-Allow-Origin", req.Header.Get("Origin"))
+		rw.Header().Add("Access-Control-Allow-Methods", req.Header.Get("Access-Control-Request-Method"))
+		rw.Header().Add("Access-Control-Allow-Headers", req.Header.Get("Access-Control-Request-Headers"))
+		rw.Header().Add("Access-Control-Allow-Credentials", "true")
+
+		// If we're getting an OPTIONS request, just send response
+		if req.Method == "OPTIONS" {
+			rw.WriteHeader(http.StatusOK)
+			return
+		}
+		handler.ServeHTTP(rw, req)
+	})
 }
