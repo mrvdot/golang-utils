@@ -73,18 +73,22 @@ func Update(mainObj interface{}, newData interface{}) bool {
 // For structs, iterates over all accessible properties and returns true only if all nested fields
 // are also empty.
 func IsEmpty(val reflect.Value) bool {
-	typeStr := val.Kind().String()
-	switch typeStr {
-	case "int", "int8", "int16", "int32", "int64":
+	valType := val.Kind()
+	switch valType {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
 		return val.Int() == 0
-	case "float", "float8", "float16", "float32", "float64":
+	case reflect.Float32, reflect.Float64:
 		return val.Float() == 0
-	case "string":
+	case reflect.String:
 		return val.String() == ""
-	case "slice", "ptr", "map", "chan", "func":
+	case reflect.Interface, reflect.Slice, reflect.Ptr, reflect.Map, reflect.Chan, reflect.Func:
 		// Check for empty slices and props
-		return val.IsNil()
-	case "struct":
+		if val.IsNil() {
+			return true
+		} else if valType == reflect.Slice || valType == reflect.Map {
+			return val.Len() == 0
+		}
+	case reflect.Struct:
 		fieldCount := val.NumField()
 		for i := 0; i < fieldCount; i++ {
 			field := val.Field(i)
@@ -96,6 +100,7 @@ func IsEmpty(val reflect.Value) bool {
 	default:
 		return false
 	}
+	return false
 }
 
 // func CorsHandler provides an *extremely* broad Cors handler for development
