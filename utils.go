@@ -2,6 +2,7 @@
 package utils
 
 import (
+	"fmt"
 	"net/http"
 	"reflect"
 	"strings"
@@ -108,17 +109,27 @@ func IsEmpty(val reflect.Value) bool {
 // more extensively restricted for a production environment
 func CorsHandler(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
-		rw.Header().Set("Content-Type", "application/json")
-		rw.Header().Add("Access-Control-Allow-Origin", req.Header.Get("Origin"))
-		rw.Header().Add("Access-Control-Allow-Methods", req.Header.Get("Access-Control-Request-Method"))
-		rw.Header().Add("Access-Control-Allow-Headers", req.Header.Get("Access-Control-Request-Headers"))
-		rw.Header().Add("Access-Control-Allow-Credentials", "true")
+		jsonp := false
+		if cbName := req.FormValue("callback"); cbName != "" && req.Method == "GET" {
+			rw.Header().Set("Content-Type", "text/javascript")
+			rw.Write([]byte(fmt.Sprintf("%v(", cbName)))
+			jsonp = true
+		} else {
+			rw.Header().Set("Content-Type", "application/json")
+			rw.Header().Add("Access-Control-Allow-Origin", req.Header.Get("Origin"))
+			rw.Header().Add("Access-Control-Allow-Methods", req.Header.Get("Access-Control-Request-Method"))
+			rw.Header().Add("Access-Control-Allow-Headers", req.Header.Get("Access-Control-Request-Headers"))
+			rw.Header().Add("Access-Control-Allow-Credentials", "true")
 
-		// If we're getting an OPTIONS request, just send response
-		if req.Method == "OPTIONS" {
-			rw.WriteHeader(http.StatusOK)
-			return
+			// If we're getting an OPTIONS request, just send response
+			if req.Method == "OPTIONS" {
+				rw.WriteHeader(http.StatusOK)
+				return
+			}
 		}
 		handler.ServeHTTP(rw, req)
+		if jsonp {
+			rw.Write([]byte(");"))
+		}
 	})
 }
