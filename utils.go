@@ -48,6 +48,18 @@ func InChain(needle string, haystack []string) bool {
 	return false
 }
 
+// Without returns a copy of the slice without the remove parameter
+//
+// [TODO] Extend to work with all standard types
+func Without(arr []string, remove string) (chopped []string) {
+	for _, s := range arr {
+		if s != remove {
+			chopped = append(chopped, s)
+		}
+	}
+	return
+}
+
 // Similar to "extend" in JS, only updates fields that are specified and not empty in newData
 //
 // Both newData and mainObj must be pointers to struct objects
@@ -109,9 +121,15 @@ func IsEmpty(val reflect.Value) bool {
 func CorsHandler(handler http.Handler) http.Handler {
 	return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 		rw.Header().Set("Content-Type", "application/json")
-		rw.Header().Add("Access-Control-Allow-Origin", req.Header.Get("Origin"))
-		rw.Header().Add("Access-Control-Allow-Methods", req.Header.Get("Access-Control-Request-Method"))
-		rw.Header().Add("Access-Control-Allow-Headers", req.Header.Get("Access-Control-Request-Headers"))
+		if origin := req.Header.Get("Origin"); origin != "" {
+			rw.Header().Add("Access-Control-Allow-Origin", origin)
+		}
+		if methods := req.Header.Get("Access-Control-Request-Method"); methods != "" {
+			rw.Header().Add("Access-Control-Allow-Methods", methods)
+		}
+		if headers := req.Header.Get("Access-Control-Request-Headers"); headers != "" {
+			rw.Header().Add("Access-Control-Allow-Headers", headers)
+		}
 		rw.Header().Add("Access-Control-Allow-Credentials", "true")
 
 		// If we're getting an OPTIONS request, just send response

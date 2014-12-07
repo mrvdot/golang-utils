@@ -34,6 +34,17 @@ func (s *MySuite) TestInChain(c *C) {
 	c.Assert(nope, Equals, false)
 }
 
+func (s *MySuite) TestWithout(c *C) {
+	chain := []string{"one", "two", "three"}
+	clone := make([]string, len(chain))
+	copy(clone, chain)
+	chopped := Without(chain, "two")
+	// Leave original alone
+	c.Assert(chain, DeepEquals, clone)
+	c.Assert(InChain("two", chopped), Equals, false)
+	c.Assert(chopped, DeepEquals, []string{"one", "three"})
+}
+
 func (s *MySuite) TestIsEmpty(c *C) {
 	// test string
 	emptyStr := ""
